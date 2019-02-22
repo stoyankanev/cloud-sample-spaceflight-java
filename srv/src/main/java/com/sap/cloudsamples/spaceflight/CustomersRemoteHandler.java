@@ -38,6 +38,7 @@ public class CustomersRemoteHandler {
 	 */
 	@Query(serviceName = BookingsHandler.BOOKING_SERVICE, entity = CUSTOMERSREMOTE)
 	public QueryResponse queryCustomers(QueryRequest qryRequest) throws ODataException {
+
 		// fetch the queried set of customers from remote
 		boolean includeAddress = qryRequest.getSelectProperties().contains(Customer.EMAIL_PROP);
 		int top = qryRequest.getTopOptionValue();
