@@ -16,6 +16,26 @@
 		<packageName>${project.groupId}</packageName>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.sap.cloud.cf.monitoring.clients</groupId>
+			<artifactId>clients-core</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sap.cloud.cf.monitoring.clients</groupId>
+			<artifactId>clients-java</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>4.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-json</artifactId>
+			<version>3.1.0</version>
+		</dependency>
 </dependencies>
 	<build>
 		<finalName>${project.artifactId}-${project.version}</finalName>
@@ -94,4 +114,11 @@
 			</build>
 		</profile>
 	</profiles>
+	<repositories>
+		<repository>
+    		<id>in-project</id>
+    		<name>In Project Repo</name>
+    		<url>file://${project.basedir}/main/resources/lib</url>
+		</repository>
+	</repositories>	
 </project>

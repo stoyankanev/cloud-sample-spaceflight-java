@@ -43,7 +43,14 @@ public class BookingsHandler {
 	private static final String PROPERTY_BOOKING_BOOKINGNO = "BookingNo";
 	private static final String PROPERTY_BOOKING_ITINERARYID = "Itinerary_ID";
 	private static final String PROPERTY_BOOKING_CUSTOMERID = "Customer_ID";
-
+	private static CustomMetricRegistry metricRegistry = new CustomMetricRegistry();
+	private static Counter bookingCreatedCountMetric = metricRegistry.counter("bookings-create-metric");
+	private static Counter bookingUpdatedCountMetric = metricRegistry.counter("bookings-update-metric");
+	
+	static{
+		metricRegistry.getReporter().start(20, TimeUnit.SECONDS);
+		metricRegistry.getReporter().report();
+	}
 	/**
 	 * Called before an entity instance is created
 	 */
