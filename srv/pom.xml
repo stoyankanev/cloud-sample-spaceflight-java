@@ -118,7 +118,7 @@
 		<repository>
     		<id>in-project</id>
     		<name>In Project Repo</name>
-    		<url>file://${project.basedir}/main/resources/lib</url>
+    		<url>file://${project.basedir}/src/main/resources/lib</url>
 		</repository>
 	</repositories>	
 </project>

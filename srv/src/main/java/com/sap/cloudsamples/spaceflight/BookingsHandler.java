@@ -9,6 +9,14 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.sap.cloud.cf.monitoring.client.model.Metric;
+import com.sap.cloud.cf.monitroing.client.MonitoringClient;
+import com.sap.cloud.cf.monitroing.client.MonitoringClientBuilder;
+import com.sap.cloud.cf.monitoring.java.CustomMetricRegistry;
+import com.sap.cloud.cf.monitroing.client.configuration.CFConfigurationProvider;
+
 import com.sap.cloud.sdk.odatav2.connectivity.ODataException;
 import com.sap.cloud.sdk.service.prov.api.DataSourceHandler;
 import com.sap.cloud.sdk.service.prov.api.EntityData;
@@ -26,6 +34,7 @@ import com.sap.cloud.sdk.service.prov.api.request.CreateRequest;
 import com.sap.cloud.sdk.service.prov.api.request.UpdateRequest;
 import com.sap.cloud.sdk.service.prov.api.response.ErrorResponse;
 import com.sap.cloud.sdk.service.prov.api.response.ErrorResponseBuilder;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Request handler for <code>BookingService.Bookings</code> entity.
@@ -39,10 +48,10 @@ public class BookingsHandler {
 
 	private static final String ENTITY_BOOKINGS = "Bookings";
 
-	private static final String ENTITY_ITINERARIES = BOOKING_SERVICE + ".Itineraries";
 	private static final String PROPERTY_BOOKING_BOOKINGNO = "BookingNo";
-	private static final String PROPERTY_BOOKING_ITINERARYID = "Itinerary_ID";
 	private static final String PROPERTY_BOOKING_CUSTOMERID = "Customer_ID";
+
+
 	private static CustomMetricRegistry metricRegistry = new CustomMetricRegistry();
 	private static Counter bookingCreatedCountMetric = metricRegistry.counter("bookings-create-metric");
 	private static Counter bookingUpdatedCountMetric = metricRegistry.counter("bookings-update-metric");
@@ -51,12 +60,15 @@ public class BookingsHandler {
 		metricRegistry.getReporter().start(20, TimeUnit.SECONDS);
 		metricRegistry.getReporter().report();
 	}
+
 	/**
 	 * Called before an entity instance is created
 	 */
 	@BeforeCreate(serviceName = BOOKING_SERVICE, entity = ENTITY_BOOKINGS)
 	public BeforeCreateResponse beforeBookingCreate(CreateRequest req, ExtensionHelper helper)
 			throws ODataException, DatasourceException {
+		bookingCreatedCountMetric.inc();
+		logger.info("Create a new booking for customer");
 		return beforeUpsert(req.getData(), helper.getHandler(), true);
 	}
 
@@ -66,6 +78,9 @@ public class BookingsHandler {
 	@BeforeUpdate(serviceName = BOOKING_SERVICE, entity = ENTITY_BOOKINGS)
 	public BeforeUpdateResponse beforeBookingUpdate(UpdateRequest req, ExtensionHelper helper)
 			throws ODataException, DatasourceException {
+		bookingUpdatedCountMetric.inc();
+		logger.info("Update booking for customer");
+
 		return beforeUpsert(req.getData(), helper.getHandler(), false);
 	}
 
@@ -79,7 +94,7 @@ public class BookingsHandler {
 		EntityDataBuilder entityBuilder = EntityData.getBuilder(reqData);
 
 		// get the booking's customer from remote, and store it in the local DB
-//		success &= fetchAndSaveCustomer(reqData, dataSource, errorResponseBuilder);
+		// success &= fetchAndSaveCustomer(reqData, dataSource, errorResponseBuilder);
 
 		if (!success) {
 			return new PreExtensionResponseImpl(
@@ -99,21 +114,24 @@ public class BookingsHandler {
 	 * 
 	 * @return <code>false</code> in case of errors
 	 */
-//	private static boolean fetchAndSaveCustomer(EntityData reqData, DataSourceHandler dataSource,
-//			ErrorResponseBuilder errorResponseBuilder) {
-//		if (reqData.contains(PROPERTY_BOOKING_CUSTOMERID)) {
-//			String custId = String.valueOf(reqData.getElementValue(PROPERTY_BOOKING_CUSTOMERID));
-//			try {
-//				Customer customer = CustomersReplicator.fetchCustomer(custId, true);
-//				CustomersReplicator.saveCustomer(customer, dataSource);
-//			} catch (Exception e) {
-//				logger.error(e.getMessage(), e);
-//				addErrorMessage(errorResponseBuilder, PROPERTY_BOOKING_CUSTOMERID, "NoSuchCustomer", custId);
-//				return false;
-//			}
-//		}
-//		return true;
-//	}
+	// private static boolean fetchAndSaveCustomer(EntityData reqData,
+	// DataSourceHandler dataSource,
+	// ErrorResponseBuilder errorResponseBuilder) {
+	// if (reqData.contains(PROPERTY_BOOKING_CUSTOMERID)) {
+	// String custId =
+	// String.valueOf(reqData.getElementValue(PROPERTY_BOOKING_CUSTOMERID));
+	// try {
+	// Customer customer = CustomersReplicator.fetchCustomer(custId, true);
+	// CustomersReplicator.saveCustomer(customer, dataSource);
+	// } catch (Exception e) {
+	// logger.error(e.getMessage(), e);
+	// addErrorMessage(errorResponseBuilder, PROPERTY_BOOKING_CUSTOMERID,
+	// "NoSuchCustomer", custId);
+	// return false;
+	// }
+	// }
+	// return true;
+	// }
 
 	private static void addErrorMessage(ErrorResponseBuilder responseBuilder, String target, String messageKey,
 			Object... messageArgs) {
